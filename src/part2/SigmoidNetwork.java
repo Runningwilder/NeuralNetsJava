@@ -30,7 +30,7 @@ public class SigmoidNetwork {
 		double[] outputs = null;
 		for (int i = 1; i < numLayers; i++) { // Iterates over all layers (except first as it's the input layer)
 			int size = sizes[i];
-			int[] z = new int[size];
+			double[] z = new double[size];
 			outputs = new double[size];
 			for(int j = 0; j < size; j++) { // Iterates over all neurons of layer i
 				for (int k = 0; k < inputs.length; k++) { // Iterates over all inputs for layer i
