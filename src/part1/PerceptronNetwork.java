@@ -44,5 +44,4 @@ public class PerceptronNetwork {
 		}
 		return outputs;
 	}
-
 }
