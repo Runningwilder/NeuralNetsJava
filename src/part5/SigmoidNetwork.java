@@ -38,46 +38,45 @@ public class SigmoidNetwork {
 			}
 			weights[i - 1] = new DoubleMatrix(temp);
 		}
-//		final double  WEIGHT = 2;
-//		double[][] customWeights = new double[][] {
-//			{0, WEIGHT, 0, WEIGHT, 0, WEIGHT, 0, WEIGHT, 0, WEIGHT},
-//			{0, 0, WEIGHT, WEIGHT, 0, 0, WEIGHT, WEIGHT, 0, 0},
-//			{0, 0, 0, 0, WEIGHT, WEIGHT, WEIGHT, WEIGHT, 0, 0},
-//			{0, 0, 0, 0, 0, 0, 0, 0, WEIGHT, WEIGHT}
-//		};
-//		weights[0] = new DoubleMatrix(customWeights);
-		
 	}
 
 	public static void main(String[] args) {
 		SigmoidNetwork net = new SigmoidNetwork(1, 1);
-		double[] inputs = {0};
-		double[] outputs = {0};
-		double[][] inputsOuputs = new double[][] {inputs, outputs};
+		double[] inputs = { 0 };
+		double[] outputs = { 0 };
+		double[][] inputsOuputs = new double[][] { inputs, outputs };
 		DoubleMatrix[][] deltas = net.backProp(inputsOuputs);
-		for(int i = 0; i < net.biases.length; i++) {
+		for (int i = 0; i < net.biases.length; i++) {
 			net.biases[i] = net.biases[i].sub(deltas[0][i].mul(4));
 		}
 		System.out.println("Complete");
 	}
 
+	/**
+	 * Return an array (nablaB , nablaW) representing the gradient for the cost
+	 * function C. "nablaB" and "nablaW" are layer-by-layer arrays of DoubleMatrices
+	 * , similar to this.biases and this.weights.
+	 * 
+	 * @param inputsOutputs
+	 * @return
+	 */
 	private DoubleMatrix[][] backProp(double[][] inputsOuputs) {
 		DoubleMatrix[] nablaB = new DoubleMatrix[biases.length];
 		DoubleMatrix[] nablaW = new DoubleMatrix[weights.length];
-		
+
 		for (int i = 0; i < nablaB.length; i++) {
 			nablaB[i] = new DoubleMatrix(biases[i].getRows(), biases[i].getColumns());
 		}
 		for (int i = 0; i < nablaW.length; i++) {
 			nablaW[i] = new DoubleMatrix(weights[i].getRows(), weights[i].getColumns());
 		}
-		
-		//FeedForward
+
+		// FeedForward
 		DoubleMatrix activation = new DoubleMatrix(inputsOuputs[0]);
 		DoubleMatrix[] activations = new DoubleMatrix[numLayers];
 		activations[0] = activation;
 		DoubleMatrix[] zs = new DoubleMatrix[numLayers - 1];
-		
+
 		for (int i = 0; i < numLayers - 1; i++) {
 			double[] scalars = new double[weights[i].rows];
 			for (int j = 0; j < weights[i].rows; j++) {
@@ -88,8 +87,8 @@ public class SigmoidNetwork {
 			activation = sigmoid(z);
 			activations[i + 1] = activation;
 		}
-		
-		//Backward pass
+
+		// Backward pass
 		DoubleMatrix output = new DoubleMatrix(inputsOuputs[1]);
 		DoubleMatrix delta = costDerivative(activations[activations.length - 1], output)
 				.mul(sigmoidPrime(zs[zs.length - 1])); // BP1
@@ -102,7 +101,7 @@ public class SigmoidNetwork {
 			nablaB[nablaB.length - layer] = delta; // BP3
 			nablaW[nablaW.length - layer] = delta.mmul(activations[activations.length - 1 - layer].transpose()); // BP4
 		}
-		return new DoubleMatrix[][] {nablaB, nablaW};
+		return new DoubleMatrix[][] { nablaB, nablaW };
 	}
 
 	private DoubleMatrix sigmoidPrime(DoubleMatrix z) {
