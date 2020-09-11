@@ -1,10 +1,13 @@
-package part6;
+package part7;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.jblas.DoubleMatrix;
+import org.jblas.util.Random;
 
 public class SigmoidNetwork {
 
@@ -25,7 +28,7 @@ public class SigmoidNetwork {
 		for (int i = 1; i < sizes.length; i++) {
 			double[][] temp = new double[sizes[i]][];
 			for (int j = 0; j < sizes[i]; j++) {
-				double[] b = new double[] { 1 }; // Set to a constant value for a while
+				double[] b = new double[] { Random.nextGaussian() };
 				temp[j] = b;
 			}
 			biases[i - 1] = new DoubleMatrix(temp);
@@ -36,7 +39,7 @@ public class SigmoidNetwork {
 			for (int j = 0; j < sizes[i]; j++) {
 				double[] w = new double[sizes[i - 1]];
 				for (int k = 0; k < sizes[i - 1]; k++) {
-					w[k] = 1; // Set to a constant value for a while
+					w[k] = Random.nextGaussian();
 				}
 				temp[j] = w;
 			}
@@ -45,15 +48,23 @@ public class SigmoidNetwork {
 	}
 
 	public static void main(String[] args) {
-		SigmoidNetwork net = new SigmoidNetwork(1, 1);
-		double[] inputs = { 0 };
-		double[] outputs = { 0 };
-		double[][] inputsOuputs = new double[][] { inputs, outputs };
-		DoubleMatrix[][] deltas = net.backProp(inputsOuputs);
-		for (int i = 0; i < net.biases.length; i++) {
-			net.biases[i] = net.biases[i].sub(deltas[0][i].mul(4));
+		List<double[][]> inputsOutputs = new ArrayList<>();
+		for (int i = 0; i < 256; i++) {
+			double[][] io = new double[2][];
+			double[] x = new double[256];
+			double[] y = new double[8];
+
+			String binary = String.format("%8s", Integer.toBinaryString(i)).replace(' ', '0');
+			x = Stream.iterate(0, n -> 0).limit(256).mapToDouble(Double::new).toArray();
+			y = Arrays.stream(binary.split("")).mapToDouble(Double::parseDouble).toArray();
+
+			x[i] = 1;
+			io[0] = x;
+			io[1] = y;
+			inputsOutputs.add(io);
 		}
-		System.out.println("Complete");
+		SigmoidNetwork net = new SigmoidNetwork(256, 32, 8);
+		net.SGD(inputsOutputs, 1000, 8, 15, inputsOutputs.subList(0, 100));
 	}
 
 	/**
@@ -62,10 +73,19 @@ public class SigmoidNetwork {
 	 * @param epochs        - the number of epochs to train for
 	 * @param miniBatchSize - the size of the mini-batches to use when sampling
 	 * @param eta           - the learning rate, η
+	 * @param testData      - the test data use to evaluate the net
 	 * @return void
 	 */
-	public void SGD(List<double[][]> trainingData, int epochs, int miniBatchSize, double eta) {
+	public void SGD(List<double[][]> trainingData, int epochs, int miniBatchSize, double eta,
+			List<double[][]> testData) {
+
+		int nTest = 0;
+
 		int n = trainingData.size();
+
+		if (testData != null) {
+			nTest = testData.size();
+		}
 
 		for (int j = 0; j < epochs; j++) {
 			Collections.shuffle(trainingData);
@@ -76,7 +96,13 @@ public class SigmoidNetwork {
 			for (List<double[][]> miniBatch : miniBatches) {
 				updateMiniBatch(miniBatch, eta);
 			}
-			System.out.println(String.format("Epoch %d complete", j));
+
+			if (testData != null) {
+				int e = evaluate(testData);
+				System.out.println(String.format("Epoch %d: %d / %d", j, e, nTest));
+			} else {
+				System.out.println(String.format("Epoch %d complete", j));
+			}
 		}
 
 	}
@@ -211,5 +237,31 @@ public class SigmoidNetwork {
 			output[i] = 1 / (1 + Math.exp(-z.get(i)));
 		}
 		return new DoubleMatrix(output);
+	}
+
+	/**
+	 * @param testData - the test data used to evaluate the net
+	 * @return the number of test inputs for which the neural network outputs the
+	 *         correct result
+	 */
+	private int evaluate(List<double[][]> testData) {
+		int sum = 0;
+		for (double[][] inputOutput : testData) {
+			DoubleMatrix x = new DoubleMatrix(inputOutput[0]);
+			DoubleMatrix y = new DoubleMatrix(inputOutput[1]);
+			DoubleMatrix netOutput = feedForward(x);
+			StringBuilder sb = new StringBuilder();
+			StringBuilder sb2 = new StringBuilder();
+			for (double d : netOutput.toArray()) {
+				sb.append(d >= 0.5 ? 1 : 0);
+			}
+			for (double d : y.toArray()) {
+				sb2.append(d >= 0.5 ? 1 : 0);
+			}
+			if (Integer.parseInt(sb.toString(), 2) == Integer.parseInt(sb2.toString(), 2)) {
+				sum++;
+			}
+		}
+		return sum;
 	}
 }
