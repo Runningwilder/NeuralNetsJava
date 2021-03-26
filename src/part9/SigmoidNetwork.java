@@ -3,10 +3,8 @@ package part9;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.jblas.DoubleMatrix;
 import org.jblas.util.Random;
@@ -54,7 +52,6 @@ public class SigmoidNetwork implements Serializable {
 			weights[i - 1] = new DoubleMatrix(temp);
 		}
 	}
-
 
 	/**
 	 * @param trainingData  - list of arrays (x, y) representing the training inputs

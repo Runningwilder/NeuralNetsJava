@@ -5,10 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Scanner;
-import java.util.stream.Stream;
 
-import org.jblas.DoubleMatrix;
+import mnist.MnistMatrix;
 
 /**
  * Util class for serialization and other stuff. Not the best way to organize
@@ -17,8 +15,11 @@ import org.jblas.DoubleMatrix;
  */
 public class Util {
 
+	private Util() {
+
+	}
+
 	private static final String FILE_SERIALIZATION = "net.ser";
-	private static SigmoidNetwork net;
 
 	/**
 	 * Serializes object
@@ -50,32 +51,18 @@ public class Util {
 		}
 		return obj;
 	}
-
-	/**
-	 * Converts in to DoubleMatrix
-	 * 
-	 * @param i int
-	 * @return DoubleMatrix representation of int
-	 */
-	public static DoubleMatrix intToDoubleMatrix(int i) {
-		double[] x = Stream.iterate(0, n -> 0).limit(256).mapToDouble(Double::new).toArray();
-		x[i] = 1;
-		return new DoubleMatrix(x);
-	}
-
-	/**
-	 * Converts DoubleMatrix to String
-	 * 
-	 * @param dm DoubleMatrix
-	 * @return String representation of DoubleMatrix
-	 */
-	public static String doubleMatrixToString(DoubleMatrix dm) {
-		StringBuilder sb = new StringBuilder();
-		for (double d : dm.toArray()) {
-			sb.append(d >= 0.5 ? 1 : 0).append(' ');
-		}
-		return sb.toString();
-	}
 	
-
+	/**
+	 * Prints matrix
+	 * @param matrix
+	 */
+    public static void printMnistMatrix(final MnistMatrix matrix) {
+        System.out.println("label: " + matrix.getLabel());
+        for (int r = 0; r < matrix.getNumberOfRows(); r++ ) {
+            for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
+                System.out.print(matrix.getValue(r, c) + " ");
+            }
+            System.out.println();
+        }
+    }
 }
