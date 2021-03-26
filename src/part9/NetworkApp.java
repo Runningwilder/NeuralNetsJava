@@ -35,10 +35,8 @@ public class NetworkApp {
 
 			for (int r = 0; r < matrix.getNumberOfRows(); r++) {
 				for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
-//					System.out.print(matrix.getValue(r, c) + " ");
-					x[c * r + c] = (double) matrix.getValue(r, c);
+					x[r * matrix.getNumberOfColumns() + c] = (double) matrix.getValue(r, c) / 255;
 				}
-//				System.out.println();
 			}
 			y = Stream.iterate(0, d -> d).limit(10).mapToDouble(d -> d).toArray();
 			y[matrix.getLabel()] = 1;
@@ -55,7 +53,7 @@ public class NetworkApp {
 		SigmoidNetwork net = new SigmoidNetwork(784, 30, 10);
 		// We're training the net here with the set of all possible data combinations.
 		// It's only for educational purposes
-		net.SGD(trainingData, 1000, 10, 3, trainingData);
+		net.SGD(trainingData, 1000, 10, 3.0, trainingData);
 
 	}
 

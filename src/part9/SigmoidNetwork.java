@@ -19,16 +19,14 @@ public class SigmoidNetwork implements Serializable {
 	 * Rate of precision that indicates when the net should stop learning. Possible
 	 * values are in range 0..1
 	 */
-	private static final double PARAM_PRECISION_RATE = 0.8;
+	private static final double PARAM_PRECISION_RATE = 1;
 
 	private int numLayers;
-	private int[] sizes;
 
 	private DoubleMatrix[] weights;
 	private DoubleMatrix[] biases;
 
 	public SigmoidNetwork(int... sizes) {
-		this.sizes = sizes;
 		this.numLayers = sizes.length;
 
 		this.biases = new DoubleMatrix[sizes.length - 1];
@@ -241,15 +239,7 @@ public class SigmoidNetwork implements Serializable {
 			DoubleMatrix x = new DoubleMatrix(inputOutput[0]);
 			DoubleMatrix y = new DoubleMatrix(inputOutput[1]);
 			DoubleMatrix netOutput = feedForward(x);
-			StringBuilder sb = new StringBuilder();
-			StringBuilder sb2 = new StringBuilder();
-			for (double d : netOutput.toArray()) {
-				sb.append(d >= 0.5 ? 1 : 0);
-			}
-			for (double d : y.toArray()) {
-				sb2.append(d >= 0.5 ? 1 : 0);
-			}
-			if (Integer.parseInt(sb.toString(), 2) == Integer.parseInt(sb2.toString(), 2)) {
+			if (netOutput.argmax() == y.argmax()) {
 				sum++;
 			}
 		}
