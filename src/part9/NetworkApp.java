@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import mnist.MnistDataReader;
+import mnist.MnistMatrix;
+
 public class NetworkApp {
 
 //	public static void main(String[] args) throws ClassNotFoundException, IOException {
@@ -18,28 +21,42 @@ public class NetworkApp {
 //			}
 //		}
 //	}
-	
 
-	public static void main(String[] args) {
-		List<double[][]> inputsOutputs = new ArrayList<>();
-		for (int i = 0; i < 256; i++) {
+	private static List<double[][]> getTrainingDataFromMnist() throws IOException {
+		List<double[][]> trainingData = new ArrayList<>();
+
+		MnistMatrix[] mnistMatrix = new MnistDataReader().readData("data/t10k-images.idx3-ubyte",
+				"data/t10k-labels.idx1-ubyte");
+		for (int i = 0; i < mnistMatrix.length; i++) {
+			MnistMatrix matrix = mnistMatrix[i];
 			double[][] io = new double[2][];
-			double[] x = new double[256];
-			double[] y = new double[8];
+			double[] x = new double[784];
+			double[] y = new double[10];
 
-			String binary = String.format("%8s", Integer.toBinaryString(i)).replace(' ', '0');
-			x = Stream.iterate(0, n -> 0).limit(256).mapToDouble(Double::new).toArray();
-			y = Arrays.stream(binary.split("")).mapToDouble(Double::parseDouble).toArray();
-
-			x[i] = 1;
+			for (int r = 0; r < matrix.getNumberOfRows(); r++) {
+				for (int c = 0; c < matrix.getNumberOfColumns(); c++) {
+//					System.out.print(matrix.getValue(r, c) + " ");
+					x[c * r + c] = (double) matrix.getValue(r, c);
+				}
+//				System.out.println();
+			}
+			y = Stream.iterate(0, d -> d).limit(10).mapToDouble(d -> d).toArray();
+			y[matrix.getLabel()] = 1;
 			io[0] = x;
 			io[1] = y;
-			inputsOutputs.add(io);
+			trainingData.add(io);
 		}
-		SigmoidNetwork net = new SigmoidNetwork(256, 32, 8);
+
+		return trainingData;
+	}
+
+	public static void main(String[] args) throws IOException {
+		List<double[][]> trainingData = getTrainingDataFromMnist();
+		SigmoidNetwork net = new SigmoidNetwork(784, 30, 10);
 		// We're training the net here with the set of all possible data combinations.
 		// It's only for educational purposes
-		net.SGD(inputsOutputs, 1000, 8, 15, inputsOutputs);
+		net.SGD(trainingData, 1000, 10, 3, trainingData);
+
 	}
-	
+
 }
